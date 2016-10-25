@@ -53,7 +53,8 @@ def get_comic_data(urls):
             for comic in comics:
                 c = comic.split("</a>")
                 m = re.compile("「(.+)」$").search(c[0])
-                if m: title = m.group(1)
+                if m:
+                    title = m.group(1)
                 author = re.sub(r"<a.*>", "", c[1].replace("</p>", "").strip())
 
                 books.append({
@@ -64,9 +65,21 @@ def get_comic_data(urls):
     return books
 
 
+def post_comic_data(url, comis):
+    for comic in comics:
+        params = {
+            "title": comic["title"],
+            "author": comic["author"],
+            "release_date": comic["release_date"]
+        }
+        requests.post(url, params)
+
+
 if __name__ == "__main__":
 
     NATALIE_URL = "http://natalie.mu/comic/feed/news"
+    API_URL = "http://localhost:8888/api/newcomics"
 
     urls = get_urls(NATALIE_URL)
     comics = get_comic_data(urls)
+    post_comic_data(API_URL, comics)
