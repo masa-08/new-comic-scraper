@@ -54,22 +54,38 @@ def get_comic_data(urls):
                 c = comic.split("</a>")
                 m = re.compile("「(.+)」$").search(c[0])
                 if m:
-                    title = m.group(1)
+                    title, volume = parse_title(m.group(1))
                 author = re.sub(r"<a.*>", "", c[1].replace("</p>", "").strip())
 
                 books.append({
                     "title": title,
+                    "volume": volume,
                     "author": author,
                     "release_date": release_date
                 })
     return books
 
 
-def post_comic_data(url, comis):
+def parse_title(title):
+    pts = ["（([0-9]+)）$", "\(([0-9]+)\)\s*$"]
+    parsed_title, volume = title, 1
+
+    for pt in pts:
+        m = re.compile(pt).search(title)
+        if m:
+            volume = int(m.group(1))
+            parsed_title = title.replace(m.group(0), "")
+            break
+
+    return parsed_title, volume
+
+
+def post_comic_data(url, comics):
     for comic in comics:
         params = {
             "title": comic["title"],
             "author": comic["author"],
+            "volume": comic["volume"],
             "release_date": comic["release_date"]
         }
         requests.post(url, params)
